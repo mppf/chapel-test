@@ -1,6 +1,7 @@
 /* Execute commands... */
 
 use "chpl_exec.h";
+use "chpl_exec.c";
 
 use Assert;
 
