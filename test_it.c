@@ -15,13 +15,11 @@ int main() {
     printf("%s\n", env[i]);
   */
 
+  const char* cmd = "ls -la";
   const char* output;
-  int result = chpl_run("ls -l ~/Dropbox", &output);
-  //save_cmd("ls -l ~/Dropbox");
+  int result = chpl_run(cmd, &output);
   printf("output:\n%s\n", output);
   printf("result = %i\n", result);
-  //  printf("output:\n%s\n", output);
-  // printf("strlen(output) = %lu\n", strlen(output));
 
   return 0;
 }
