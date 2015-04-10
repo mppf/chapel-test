@@ -21,7 +21,7 @@ proc run(cmd: string) {
 
   const result = chpl_run(cmd: c_string, temp);
   output = toString(temp);
-  return (result, output);
+  return output;
 }
 
 proc getEnviron() {

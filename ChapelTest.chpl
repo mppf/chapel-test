@@ -9,7 +9,7 @@ config const printEnv = false;
 proc main() {
   if printEnv {
     writeln("### Chapel Environment ###");
-    const (r, chplEnv) = run("$CHPL_HOME/util/printchplenv");
+    const chplEnv = run("$CHPL_HOME/util/printchplenv");
     write(chplEnv);
     writeln("##########################");
     writeln();
