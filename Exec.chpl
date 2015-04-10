@@ -7,17 +7,14 @@ use Assert;
 
 /* Run `cmd` and return exit code and output. */
 proc run(cmd: string) {
-  extern proc setenv(envKey: c_string, envValue: c_string, overwrite: bool): int;
   extern proc chpl_run(cmd: c_string, ref stdout: c_string_copy): int;
 
   var temp: c_string_copy,
     output: string;
 
   const env = getEnviron();
-
   for key in env.domain {
-    const setResult = setenv(key: c_string, env[key]: c_string, true);
-    assert(setResult == 0, "Failed to set env var " + key);
+    setEnv(key, env[key]);
   }
 
   const result = chpl_run(cmd: c_string, temp);
@@ -44,4 +41,50 @@ proc getEnviron() {
   }
 
   return env;
+}
+
+
+/* Get the value of the envirionment variable. Returns empty string if variable
+   is unset.
+
+   :arg envVar: environment variable name
+   :type envVar: string
+
+   :returns: environment variable value
+   :rtype: string
+*/
+proc getEnv(envVar: string): string {
+  extern proc getenv(envKey: c_string): c_string;
+
+  const value = getenv(envVar);
+  return value: string;
+}
+
+
+/* Set the environment variable `envVar` to the given value.
+
+   :arg envVar: environment variable name
+   :type envVar: string
+
+   :arg value: environment variable value
+   :type value: string
+*/
+proc setEnv(envVar: string, value: string) {
+  extern proc setenv(envKey: c_string, envValue: c_string, overwrite: bool): int;
+
+  const result = setenv(envVar: c_string, value: c_string, true);
+  assert(result == 0, "Failed to set env var " + envVar);
+}
+
+
+/* Delete variable `envVar` from environment.
+
+   :arg envVar: environment variable name
+   :type envVar: string
+*/
+proc unsetEnv(envVar: string) {
+  extern proc unsetenv(envKey: c_string): int;
+
+  const result = unsetenv(envVar: c_string);
+  assert(result == 0, "Failed to unset env var " + envVar);
 }
