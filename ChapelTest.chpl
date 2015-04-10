@@ -10,6 +10,7 @@ config const printEnv = testverbose;
 
 proc main() {
   const chplHome = getChplHome();
+  setEnv("CHPL_HOME", chplHome);
 
   if printEnv {
     writeln("### Chapel Environment ###");
@@ -52,7 +53,7 @@ proc getChplHome() {
 
   for i in 1..output.length {
     if output.substring(i) == "\t" {
-      chplHome = output.substring(1..i);
+      chplHome = output.substring(1..i-1);
       break;
     }
   }
