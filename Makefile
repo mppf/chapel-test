@@ -6,6 +6,8 @@ TEST = test
 
 CHPL = chpl
 
+CHPL_FLAGS := 
+
 CHPLTEST = $(BIN)/chpltest
 CHPL_SRCS = *.chpl
 
@@ -20,7 +22,7 @@ $(BIN):
 	mkdir -p $(@)
 
 $(CHPLTEST): $(CHPL_SRCS) $(C_SRCS) $(C_HDRS) $(BIN)
-	$(CHPL) -o $(@) ChapelTest.chpl
+	$(CHPL) $(CHPL_FLAGS) -o $(@) ChapelTest.chpl
 
 $(C_TEST): $(TEST)/test_it.c $(C_SRCS) $(C_HDRS) $(BIN)
 	$(CC) -o $(@) -I$(REPO_ROOT) $(TEST)/test_it.c $(C_SRCS)
@@ -28,4 +30,7 @@ $(C_TEST): $(TEST)/test_it.c $(C_SRCS) $(C_HDRS) $(BIN)
 c-test: $(C_TEST)
 	$(<)
 
-.PHONY: c-test default
+clean:
+	rm -rf $(BIN)
+
+.PHONY: c-test clean default
