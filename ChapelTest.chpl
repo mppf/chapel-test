@@ -13,8 +13,8 @@ proc main() {
   setEnv("CHPL_HOME", chplHome);
 
   if printEnv {
-    writeln("### Chapel Environment ###");
     const chplEnv = run("$CHPL_HOME/util/printchplenv");
+    writeln("### Chapel Environment ###");
     write(chplEnv);
     writeln("##########################");
     writeln();
