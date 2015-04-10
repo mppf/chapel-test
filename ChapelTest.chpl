@@ -4,9 +4,13 @@ use FileSystem;
 
 config const testDir = "/Users/tvandoren/src/chapel/test/release/examples/programs";
 
-config const printEnv = false;
+config const testverbose = false;
+config const printEnv = testverbose;
+
 
 proc main() {
+  const chplHome = getChplHome();
+
   if printEnv {
     writeln("### Chapel Environment ###");
     const chplEnv = run("$CHPL_HOME/util/printchplenv");
@@ -20,11 +24,9 @@ proc main() {
   }
 }
 
-
 proc runTest(test) {
   writeln("testing: ", test);
 }
-
 
 iter findTests(testDir) {
   for filename in findfiles(testDir, recursive=true) {
@@ -34,7 +36,6 @@ iter findTests(testDir) {
   }
 }
 
-
 iter findTests(testDir, param tag: iterKind)
   where tag == iterKind.standalone
 {
@@ -43,6 +44,23 @@ iter findTests(testDir, param tag: iterKind)
       yield filename;
     }
   }
+}
+
+proc getChplHome() {
+  const output = run("chpl --print-chpl-home");
+  var chplHome: string;
+
+  for i in 1..output.length {
+    if output.substring(i) == "\t" {
+      chplHome = output.substring(1..i);
+      break;
+    }
+  }
+
+  if testverbose then
+    writeln("CHPL_HOME: ", chplHome);
+
+  return chplHome;
 }
 
 proc isChapelFile(filename) {
