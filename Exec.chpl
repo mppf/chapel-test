@@ -14,9 +14,10 @@ proc run(cmd: string) {
 
   const env = getEnviron();
 
-  for key in env.domain do
-    assert(setenv(key: c_string, env[key]: c_string, true) == 0,
-           "Failed to set env var " + key);
+  for key in env.domain {
+    const setResult = setenv(key: c_string, env[key]: c_string, true);
+    assert(setResult == 0, "Failed to set env var " + key);
+  }
 
   const result = chpl_run(cmd: c_string, temp);
   output = toString(temp);

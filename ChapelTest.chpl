@@ -4,14 +4,16 @@ use FileSystem;
 
 config const testDir = "/Users/tvandoren/src/chapel/test/release/examples/programs";
 
-proc main() {
-  const env = getEnviron();
+config const printEnv = false;
 
-  writeln("### Chapel Environment ###");
-  const r, chplEnv = run("$CHPL_HOME/util/printchplenv");
-  writeln(chplEnv);
-  writeln("##########################");
-  writeln();
+proc main() {
+  if printEnv {
+    writeln("### Chapel Environment ###");
+    const (r, chplEnv) = run("$CHPL_HOME/util/printchplenv");
+    write(chplEnv);
+    writeln("##########################");
+    writeln();
+  }
 
   forall test in findTests(testDir) {
     runTest(test);
