@@ -7,19 +7,22 @@ config const testDir = "/Users/tvandoren/src/chapel/test/release/examples/progra
 
 config const testverbose = false;
 config const printEnv = testverbose;
+config const noRecurse = false;
 
 
 proc main() {
-  var testRunner = new TestRunner(testDir);
+  var testRunner = new TestRunner(testDir, !noRecurse);
   testRunner.runTests();
   delete testRunner;
 }
 
 class TestRunner {
-  const testDir, chplHome: string;
+  const testDir, chplHome: string,
+    recurse: bool;
 
-  proc TestRunner(testDir) {
+  proc TestRunner(testDir, recurse) {
     this.testDir = testDir;
+    this.recurse = recurse;
     this.chplHome = this.getChplHome();
   }
 
@@ -27,7 +30,7 @@ class TestRunner {
     setEnv("CHPL_HOME", this.chplHome);
     this.printEnvironment();
 
-    // forall test in this.findTests() {
+    // TODO: forall test in this.findTests() {
     for test in this.findTests() {
       this.runTest(test);
     }
@@ -69,22 +72,22 @@ class TestRunner {
   }
 
   iter findTests() {
-    for filename in findfiles(this.testDir, recursive=true) {
+    for filename in findfiles(this.testDir, recursive=this.recurse) {
       if this.isChapelFile(filename) {
         yield filename;
       }
     }
   }
 
-  /* iter findTests(param tag: iterKind) */
-  /*   where tag == iterKind.standalone */
-  /* { */
-  /*   forall filename in findfiles(this.testDir, recursive=true) { */
-  /*     if this.isChapelFile(filename) { */
-  /*       yield filename; */
-  /*     } */
-  /*   } */
-  /* } */
+  iter findTests(param tag: iterKind)
+    where tag == iterKind.standalone
+  {
+    forall filename in findfiles(this.testDir, recursive=this.recurse) {
+      if this.isChapelFile(filename) {
+        yield filename;
+      }
+    }
+  }
 
   proc isChapelFile(filename) {
     return getTestBasename(filename) + ".chpl" == filename;
@@ -100,6 +103,8 @@ class TestRunner {
 
 class Test {
   const test, testDir, testBasename, testName: string;
+  var diff: string,
+    success: bool;
 
   proc Test(test) {
     this.test = test;
@@ -120,6 +125,12 @@ class Test {
     } else {
       writeln("ERROR: matching output: " + this.test);
     }
+    return this.result;
+  }
+
+  proc result {
+    // return pass/fail as bool, then diff
+    return (this.success, this.diff);
   }
 
   proc fullTestName {
@@ -141,7 +152,29 @@ class Test {
   }
 
   proc checkOutput(testOutput) {
-    return testOutput == this.expectedOutput;
+    const expectedOut = this.expectedOutput;
+    this.success = testOutput == expectedOut;
+    if !this.success {
+      this.diff = this.generateDiff(expectedOut, testOutput);
+    }
+    return this.success;
+  }
+
+  proc actualOutputFile {
+    return this.fullTestName + ".out.tmp";
+  }
+
+  proc generateDiff(expectedOutput, actualOutput) {
+    var f = open(this.actualOutputFile, iomode.cw),
+      w = f.writer();
+    w.write(actualOutput);
+    w.close();
+    f.close();
+
+    const cmd = "diff " + this.goodFile + " " + this.actualOutputFile;
+    if testverbose then
+      writeln("Running diff command: " + cmd);
+    return run(cmd);
   }
 
   proc compile() {
